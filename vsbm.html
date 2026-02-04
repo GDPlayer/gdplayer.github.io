@@ -31,27 +31,22 @@ let mx=0,my=0,ml=0;
 const KERNEL = `
 float kernal(vec3 p){
     vec3 z = p;
-    float dr = 1.0;
-    float r = 0.0;
 
-    for(int i = 0; i < 6; i++){
-        r = dot(z,z);
-        if(r > 16.0) break;
-        float x = z.x, y = z.y, z0 = z.z;
+    for(int i=0;i<6;i++){
+        z = abs(z);                 // Fycj
+        if(z.x < z.y) z.xy = z.yx;
+        if(z.x < z.z) z.xz = z.zx;
+        if(z.y < z.z) z.yz = z.zy;
 
-        float x2 = x*x, y2 = y*y, z2 = z0*z0;
-        float xy = x*y, xz = x*z0, yz = y*z0;
+        z = z*1.35 - vec3(0.4,0.3,0.2);
+        z += p * 0.6;
 
-        z = vec3(
-            x*(x2 - 3.0*y2 - 3.0*z2),
-            y*(3.0*x2 - y2 - 3.0*z2),
-            z0*(3.0*x2 + 3.0*y2 - z2)
-        ) + p;
+        if(dot(z,z) > 20.0) break;
     }
 
-    // skibidi
-    return 2.5 - length(z);
+    return 1.5 - length(z);
 }
+
 `;
 
 const VSHADER = `
