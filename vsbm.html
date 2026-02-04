@@ -30,25 +30,31 @@ let mx=0,my=0,ml=0;
 
 const KERNEL = `
 float kernal(vec3 p){
-    vec3 z = p;
-
-    for(int i=0;i<6;i++){
-        z = abs(z);                 // Fycj
-        if(z.x < z.y) z.xy = z.yx;
-        if(z.x < z.z) z.xz = z.zx;
-        if(z.y < z.z) z.yz = z.zy;
-
-        z = z*1.35 - vec3(0.4,0.3,0.2);
-        z += p * 0.6;
-
-        if(dot(z,z) > 20.0) break;
+    vec3 w = p;
+    float m = dot(w,w);
+    float dz = 1.0;
+    
+    // Reduced to 4 iterations for performance
+    for(int i=0; i<4; i++){
+        // Distance estimation logic: helps the marcher jump further
+        dz = 8.0 * pow(m, 3.5) * dz + 1.0;
+        
+        float r = length(w);
+        float b = atan(w.y, w.x);
+        float a = acos(clamp(w.z / r, -1.0, 1.0));
+        
+        float zr = pow(r, 8.0);
+        a *= 8.0;
+        b *= 8.0;
+        
+        w = zr * vec3(sin(a) * cos(b), sin(a) * sin(b), cos(a)) + p;
+        m = dot(w,w);
+        if(m > 4.0) break;
     }
-
-    return 1.5 - length(z);
+    // Return a standard Distance Estimator value
+    return 0.25 * log(m) * sqrt(m) / dz;
 }
-
 `;
-
 const VSHADER = `
 attribute vec4 position;
 varying vec2 v_uv;
