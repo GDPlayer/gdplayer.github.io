@@ -1,0 +1,184 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>volumeshader_stable</title>
+    <style>
+        body { background: #000; margin: 0; overflow: hidden; }
+        #c1 { width: 100vw; height: 100vh; display: block; }
+        #btn { position: fixed; left: 10px; top: 10px; z-index: 10; opacity: 0.5; }
+        #btn:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+    <canvas id="c1"></canvas>
+    <button id="btn" onclick="location.reload()">RELOAD IF LOST</button>
+
+<script>
+    const canvas = document.getElementById('c1');
+    // Request low power preference to increase stability on laptops
+    const gl = canvas.getContext('webgl', { 
+        antialias: false, 
+        depth: false, 
+        preserveDrawingBuffer: false,
+        powerPreference: "high-performance" 
+    });
+
+    if (!gl) alert("WebGL not supported");
+
+    let ang1 = 2.8, ang2 = 0.4, len = 1.6;
+    let mx = 0, my = 0, ml = 0;
+
+    // Optimized Kernel: Pre-calculating constants and using faster escape
+    const KERNEL = `
+        float kernal(vec3 ver){
+            vec3 a = ver;
+            float b;
+            for(int i=0; i<5; i++){
+                b = dot(a,a); // Use dot for faster magnitude check
+                if(b > 36.0) break; 
+                b = sqrt(b);
+                float c = atan(a.y, a.x) * 8.0;
+                float d = acos(clamp(a.z / (b + 0.0001), -1.0, 1.0)) * 8.0;
+                float b2 = b*b; float b4 = b2*b2; b = b4*b4;
+                a = vec3(b * sin(d) * cos(c), b * sin(d) * sin(c), b * cos(d)) + ver;
+            }
+            return 4.0 - dot(a, a);
+        }
+    `;
+
+    const VSHADER = `
+        attribute vec4 position;
+        varying vec2 v_uv;
+        void main() {
+            gl_Position = position;
+            v_uv = position.xy;
+        }
+    `;
+
+    const FSHADER = `
+        precision highp float;
+        uniform vec3 u_right, u_forward, u_up, u_origin;
+        uniform float u_aspect, u_len;
+        varying vec2 v_uv;
+
+        ${KERNEL}
+
+        void main() {
+            vec3 dir = normalize(u_forward + u_right * v_uv.x * u_aspect + u_up * v_uv.y);
+            vec3 color = vec3(0.0);
+            
+            // Adaptive Stepping: Start with larger steps, 
+            // only slow down when we get close to the surface.
+            float t = 0.0;
+            float max_dist = u_len * 2.5;
+            bool hit = false;
+            
+            for (int i = 0; i < 200; i++) {
+                vec3 p = u_origin + dir * t;
+                float d = kernal(p);
+                if (d > 0.0) {
+                    hit = true;
+                    break;
+                }
+                // Step size grows slightly as we go further to prevent TDR
+                t += 0.005 * u_len; 
+                if (t > max_dist) break;
+            }
+
+            if (hit) {
+                vec3 ver = u_origin + dir * t;
+                float distSq = dot(ver, ver);
+                float eps = t * 0.0005;
+                
+                // Normal
+                vec3 n = normalize(vec3(
+                    kernal(ver - u_right * eps) - kernal(ver + u_right * eps),
+                    kernal(ver - u_up * eps) - kernal(ver + u_up * eps),
+                    kernal(ver + u_forward * eps) - kernal(ver - u_forward * eps)
+                ));
+
+                // Original Lighting
+                vec3 reflectDir = reflect(dir, n);
+                float spec = pow(max(0.0, reflectDir.x*0.276 + reflectDir.y*0.920 + reflectDir.z*0.276), 4.0);
+                float diff = max(0.0, dot(n, vec3(0.276, 0.920, 0.276)));
+                float brightness = spec * 0.45 + diff * 0.25 + 0.3;
+
+                color.x = sin(distSq * 10.0) * 0.5 + 0.5;
+                color.y = sin(distSq * 10.0 + 2.05) * 0.5 + 0.5;
+                color.z = sin(distSq * 10.0 - 2.05) * 0.5 + 0.5;
+                color *= brightness;
+            }
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `;
+
+    function createShader(gl, type, source) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, source);
+        gl.compileShader(s);
+        return s;
+    }
+
+    const program = gl.createProgram();
+    gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, VSHADER));
+    gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, FSHADER));
+    gl.linkProgram(program);
+    gl.useProgram(program);
+
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    const posLoc = gl.getAttribLocation(program, "position");
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+    function render() {
+        if (gl.isContextLost()) return;
+        
+        const eye = [
+            len * Math.cos(ang1) * Math.cos(ang2),
+            len * Math.sin(ang2),
+            len * Math.sin(ang1) * Math.cos(ang2)
+        ];
+
+        gl.uniform1f(gl.getUniformLocation(program, "u_aspect"), canvas.width / canvas.height);
+        gl.uniform1f(gl.getUniformLocation(program, "u_len"), len);
+        gl.uniform3f(gl.getUniformLocation(program, "u_origin"), eye[0], eye[1], eye[2]);
+        gl.uniform3f(gl.getUniformLocation(program, "u_right"), Math.sin(ang1), 0, -Math.cos(ang1));
+        gl.uniform3f(gl.getUniformLocation(program, "u_up"), -Math.sin(ang2) * Math.cos(ang1), Math.cos(ang2), -Math.sin(ang2) * Math.sin(ang1));
+        gl.uniform3f(gl.getUniformLocation(program, "u_forward"), -Math.cos(ang1) * Math.cos(ang2), -Math.sin(ang2), -Math.sin(ang1) * Math.cos(ang2));
+
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        ang1 += 0.005;
+        requestAnimationFrame(render);
+    }
+
+    canvas.addEventListener('webglcontextlost', (e) => {
+        e.preventDefault();
+        console.warn("Context Lost! Reducing resolution...");
+    }, false);
+
+    window.onresize = () => {
+        // Optimization: Render at 75% resolution if the screen is huge to prevent TDR
+        const scale = window.innerWidth > 1920 ? 0.75 : 1.0;
+        canvas.width = window.innerWidth * scale;
+        canvas.height = window.innerHeight * scale;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+    };
+
+    window.onresize();
+    render();
+
+    canvas.onmousedown = (e) => { ml = 1; mx = e.clientX; my = e.clientY; };
+    window.onmouseup = () => ml = 0;
+    window.onmousemove = (e) => {
+        if (ml) {
+            ang1 += (e.clientX - mx) * 0.005;
+            ang2 += (e.clientY - my) * 0.005;
+            mx = e.clientX; my = e.clientY;
+        }
+    };
+</script>
+</body>
+</html>
