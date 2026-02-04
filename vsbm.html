@@ -23,38 +23,32 @@ const gl = canvas.getContext("webgl",{
     preserveDrawingBuffer:false,
     powerPreference:"high-performance"
 });
-if(!gl) alert("WebGL is not found");
+if(!gl) alert("webgl is no");
 
 let ang1 = 2.8, ang2 = 0.4, len = 1.6;
 let mx=0,my=0,ml=0;
 
 const KERNEL = `
-float kernal(vec3 p){
-    vec3 w = p;
-    float m = dot(w,w);
-    float dz = 1.0;
-    
-    // Reduced to 4 iterations for performance
-    for(int i=0; i<4; i++){
-        // Distance estimation logic: helps the marcher jump further
-        dz = 8.0 * pow(m, 3.5) * dz + 1.0;
-        
-        float r = length(w);
-        float b = atan(w.y, w.x);
-        float a = acos(clamp(w.z / r, -1.0, 1.0));
-        
-        float zr = pow(r, 8.0);
-        a *= 8.0;
-        b *= 8.0;
-        
-        w = zr * vec3(sin(a) * cos(b), sin(a) * sin(b), cos(a)) + p;
-        m = dot(w,w);
-        if(m > 4.0) break;
+float kernal(vec3 ver){
+    vec3 a = ver;
+    float b;
+    for(int i=0;i<5;i++){
+        b = dot(a,a);
+        if(b > 36.0) break;
+        b = sqrt(b);
+        float c = atan(a.y,a.x) * 8.0;
+        float d = acos(clamp(a.z/(b+0.0001),-1.0,1.0)) * 8.0;
+        float b2=b*b; float b4=b2*b2; b=b4*b4;
+        a = vec3(
+            b*sin(d)*cos(c),
+            b*sin(d)*sin(c),
+            b*cos(d)
+        ) + ver;
     }
-    // Return a standard Distance Estimator value
-    return 0.25 * log(m) * sqrt(m) / dz;
+    return 4.0 - dot(a,a);
 }
 `;
+
 const VSHADER = `
 attribute vec4 position;
 varying vec2 v_uv;
