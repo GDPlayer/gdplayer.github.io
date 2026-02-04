@@ -1,202 +1,154 @@
-<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>evil fucking volumeshader_bm</title>
-<style>
-body{margin:0;overflow:hidden;background:#000}
-#c1{width:100vw;height:100vh;display:block}
-#btn{position:fixed;left:10px;top:10px;z-index:10;opacity:.5}
-#btn:hover{opacity:1}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>evil fucking volumeshader_bm</title>
+    <style>
+        body { background: #131115; margin: 0; overflow: hidden; }
+        #c1 { width: 100vw; height: 100vh; display: block; }
+    </style>
 </head>
 <body>
-<canvas id="c1"></canvas>
-<button id="btn" onclick="location.reload()">RELOAD IF LOST</button>
-
+    <canvas id="c1"></canvas>
 <script>
-const canvas = document.getElementById("c1");
-const gl = canvas.getContext("webgl",{
-    antialias:false,
-    depth:false,
-    preserveDrawingBuffer:false,
-    powerPreference:"high-performance"
-});
-if(!gl) alert("webgl is no");
+    const canvas = document.getElementById('c1');
+    const gl = canvas.getContext('webgl', { 
+        antialias: false, 
+        depth: false, 
+        alpha: false,
+        stencil: false,
+        preserveDrawingBuffer: false,
+        desynchronized: true
+    });
 
-let ang1 = 2.8, ang2 = 0.4, len = 1.6;
-let mx=0,my=0,ml=0;
+    let ang1 = 2.8, ang2 = 0.4, len = 1.6;
+    let mx = 0, my = 0, ml = 0;
 
-const KERNEL = `
-float kernal(vec3 ver){
-    vec3 a = ver;
-    float b;
-    for(int i=0;i<5;i++){
-        b = dot(a,a);
-        if(b > 36.0) break;
-        b = sqrt(b);
-        float c = atan(a.y,a.x) * 8.0;
-        float d = acos(clamp(a.z/(b+0.0001),-1.0,1.0)) * 8.0;
-        float b2=b*b; float b4=b2*b2; b=b4*b4;
-        a = vec3(
-            b*sin(d)*cos(c),
-            b*sin(d)*sin(c),
-            b*cos(d)
-        ) + ver;
-    }
-    return 4.0 - dot(a,a);
-}
-`;
-
-const VSHADER = `
-attribute vec4 position;
-varying vec2 v_uv;
-void main(){
-    gl_Position = position;
-    v_uv = position.xy;
-}
-`;
-
-const FSHADER = `
-precision mediump float;
-
-uniform vec3 u_right,u_forward,u_up,u_origin;
-uniform float u_aspect,u_len;
-varying vec2 v_uv;
-
-${KERNEL}
-
-// sphere tracing marcher
-float march(vec3 ro, vec3 rd, out vec3 hitPos){
-    float t = 0.0;
-    float maxDist = u_len * 2.5;
-    for(int i=0;i<110;i++){
-        vec3 p = ro + rd * t;
-        float d = kernal(p);
-        if(d > 0.0){
-            hitPos = p;
-            return t;
+    const KERNEL = `
+        float kernal(vec3 ver){
+            vec3 a = ver;
+            float b;
+            for(int i=0; i<5; i++){
+                b = length(a);
+                if(b > 6.0) break;
+                float c = atan(a.y, a.x) * 8.0;
+                float d = acos(clamp(a.z / (b + 0.0001), -1.0, 1.0)) * 8.0;
+                float b2 = b*b; float b4 = b2*b2; b = b4*b4;
+                a = vec3(b * sin(d) * cos(c), b * sin(d) * sin(c), b * cos(d)) + ver;
+            }
+            return 4.0 - dot(a, a);
         }
-        t += max(-d * 0.6, 0.002 * u_len);
-        if(t > maxDist) break;
+    `;
+
+    const VSHADER = `
+        attribute vec4 position;
+        varying vec2 v_uv;
+        void main() {
+            gl_Position = position;
+            v_uv = position.xy;
+        }
+    `;
+
+    const FSHADER = `
+        precision highp float;
+        uniform vec3 u_right, u_forward, u_up, u_origin;
+        uniform float u_aspect, u_len;
+        varying vec2 v_uv;
+        ${KERNEL}
+        void main() {
+            vec3 dir = normalize(u_forward + u_right * v_uv.x * u_aspect + u_up * v_uv.y);
+            vec3 color = vec3(0.0);
+            float t = 0.0;
+            float stepSize = 0.005 * u_len;
+            bool hit = false;
+            for (int i = 0; i < 180; i++) {
+                t += stepSize;
+                if (kernal(u_origin + dir * t) > 0.0) {
+                    hit = true;
+                    break;
+                }
+            }
+            if (hit) {
+                vec3 ver = u_origin + dir * t;
+                float distSq = dot(ver, ver);
+                float eps = t * 0.0005;
+                vec3 n = normalize(vec3(
+                    kernal(ver - u_right * eps) - kernal(ver + u_right * eps),
+                    kernal(ver - u_up * eps) - kernal(ver + u_up * eps),
+                    kernal(ver + u_forward * eps) - kernal(ver - u_forward * eps)
+                ));
+                vec3 refl = reflect(dir, n);
+                float spec = pow(max(0.0, refl.x*0.276 + refl.y*0.920 + refl.z*0.276), 4.0);
+                float diff = max(0.0, dot(n, vec3(0.276, 0.920, 0.276)));
+                float bright = spec * 0.45 + diff * 0.25 + 0.3;
+                color = (sin(vec3(distSq * 10.0, distSq * 10.0 + 2.05, distSq * 10.0 - 2.05)) * 0.5 + 0.5) * bright;
+            }
+            gl_FragColor = vec4(color, 1.0);
+        }
+    `;
+
+    const prog = gl.createProgram();
+    const vs = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vs, VSHADER);
+    gl.compileShader(vs);
+    const fs = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fs, FSHADER);
+    gl.compileShader(fs);
+    gl.attachShader(prog, vs);
+    gl.attachShader(prog, fs);
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    const pos = gl.getAttribLocation(prog, "position");
+    gl.enableVertexAttribArray(pos);
+    gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+
+    const u_a = gl.getUniformLocation(prog, "u_aspect");
+    const u_l = gl.getUniformLocation(prog, "u_len");
+    const u_o = gl.getUniformLocation(prog, "u_origin");
+    const u_r = gl.getUniformLocation(prog, "u_right");
+    const u_u = gl.getUniformLocation(prog, "u_up");
+    const u_f = gl.getUniformLocation(prog, "u_forward");
+
+    function render() {
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        const eye = [
+            len * Math.cos(ang1) * Math.cos(ang2),
+            len * Math.sin(ang2),
+            len * Math.sin(ang1) * Math.cos(ang2)
+        ];
+        gl.uniform1f(u_a, canvas.width / canvas.height);
+        gl.uniform1f(u_l, len);
+        gl.uniform3f(u_o, eye[0], eye[1], eye[2]);
+        gl.uniform3f(u_r, Math.sin(ang1), 0, -Math.cos(ang1));
+        gl.uniform3f(u_u, -Math.sin(ang2) * Math.cos(ang1), Math.cos(ang2), -Math.sin(ang2) * Math.sin(ang1));
+        gl.uniform3f(u_f, -Math.cos(ang1) * Math.cos(ang2), -Math.sin(ang2), -Math.sin(ang1) * Math.cos(ang2));
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        ang1 += 0.005;
+        requestAnimationFrame(render);
     }
-    return -1.0;
-}
 
-// tetrahedral normal
-vec3 fastNormal(vec3 p, float eps){
-    vec2 e = vec2(1.0,-1.0) * eps;
-    return normalize(
-        e.xyy * kernal(p + e.xyy) +
-        e.yyx * kernal(p + e.yyx) +
-        e.yxy * kernal(p + e.yxy) +
-        e.xxx * kernal(p + e.xxx)
-    );
-}
-
-void main(){
-    vec3 dir = normalize(
-        u_forward +
-        u_right * v_uv.x * u_aspect +
-        u_up * v_uv.y
-    );
-
-    vec3 color = vec3(0.0);
-    vec3 hitPos;
-    float t = march(u_origin, dir, hitPos);
-
-    if(t > 0.0){
-        float distSq = dot(hitPos, hitPos);
-        vec3 n = fastNormal(hitPos, t * 0.0006);
-
-        vec3 lightDir = normalize(vec3(0.276,0.920,0.276));
-        vec3 r = reflect(dir, n);
-
-        float spec = pow(max(0.0, dot(r, lightDir)), 4.0);
-        float diff = max(0.0, dot(n, lightDir));
-        float brightness = spec*0.45 + diff*0.25 + 0.3;
-
-        color.r = sin(distSq*10.0) * 0.5 + 0.5;
-        color.g = sin(distSq*10.0 + 2.05) * 0.5 + 0.5;
-        color.b = sin(distSq*10.0 - 2.05) * 0.5 + 0.5;
-        color *= brightness;
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
     }
 
-    gl_FragColor = vec4(color,1.0);
-}
-`;
+    window.onresize = resize;
+    resize();
+    render();
 
-function shader(type,src){
-    const s = gl.createShader(type);
-    gl.shaderSource(s,src);
-    gl.compileShader(s);
-    return s;
-}
-
-const prog = gl.createProgram();
-gl.attachShader(prog, shader(gl.VERTEX_SHADER,VSHADER));
-gl.attachShader(prog, shader(gl.FRAGMENT_SHADER,FSHADER));
-gl.linkProgram(prog);
-gl.useProgram(prog);
-
-const buf = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER,buf);
-gl.bufferData(
-    gl.ARRAY_BUFFER,
-    new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),
-    gl.STATIC_DRAW
-);
-const pos = gl.getAttribLocation(prog,"position");
-gl.enableVertexAttribArray(pos);
-gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
-
-function resize(){
-    const scale = innerWidth>1920 ? 0.75 : 1.0;
-    canvas.width = innerWidth*scale;
-    canvas.height = innerHeight*scale;
-    gl.viewport(0,0,canvas.width,canvas.height);
-}
-window.onresize = resize;
-resize();
-
-function render(){
-    const eye = [
-        len*Math.cos(ang1)*Math.cos(ang2),
-        len*Math.sin(ang2),
-        len*Math.sin(ang1)*Math.cos(ang2)
-    ];
-
-    gl.uniform1f(gl.getUniformLocation(prog,"u_aspect"),canvas.width/canvas.height);
-    gl.uniform1f(gl.getUniformLocation(prog,"u_len"),len);
-    gl.uniform3f(gl.getUniformLocation(prog,"u_origin"),eye[0],eye[1],eye[2]);
-    gl.uniform3f(gl.getUniformLocation(prog,"u_right"),Math.sin(ang1),0,-Math.cos(ang1));
-    gl.uniform3f(gl.getUniformLocation(prog,"u_up"),
-        -Math.sin(ang2)*Math.cos(ang1),
-        Math.cos(ang2),
-        -Math.sin(ang2)*Math.sin(ang1)
-    );
-    gl.uniform3f(gl.getUniformLocation(prog,"u_forward"),
-        -Math.cos(ang1)*Math.cos(ang2),
-        -Math.sin(ang2),
-        -Math.sin(ang1)*Math.cos(ang2)
-    );
-
-    gl.drawArrays(gl.TRIANGLES,0,6);
-    ang1 += 0.005;
-    requestAnimationFrame(render);
-}
-render();
-
-canvas.onmousedown=e=>{ml=1;mx=e.clientX;my=e.clientY};
-window.onmouseup=()=>ml=0;
-window.onmousemove=e=>{
-    if(ml){
-        ang1+=(e.clientX-mx)*0.005;
-        ang2+=(e.clientY-my)*0.005;
-        mx=e.clientX; my=e.clientY;
-    }
-};
+    canvas.onmousedown = (e) => { ml = 1; mx = e.clientX; my = e.clientY; };
+    window.onmouseup = () => ml = 0;
+    window.onmousemove = (e) => {
+        if (ml) {
+            ang1 += (e.clientX - mx) * 0.005;
+            ang2 += (e.clientY - my) * 0.005;
+            mx = e.clientX; my = e.clientY;
+        }
+    };
 </script>
 </body>
 </html>
