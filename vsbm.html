@@ -29,23 +29,28 @@ let ang1 = 2.8, ang2 = 0.4, len = 1.6;
 let mx=0,my=0,ml=0;
 
 const KERNEL = `
-float kernal(vec3 ver){
-    vec3 a = ver;
-    float b;
-    for(int i=0;i<5;i++){
-        b = dot(a,a);
-        if(b > 36.0) break;
-        b = sqrt(b);
-        float c = atan(a.y,a.x) * 8.0;
-        float d = acos(clamp(a.z/(b+0.0001),-1.0,1.0)) * 8.0;
-        float b2=b*b; float b4=b2*b2; b=b4*b4;
-        a = vec3(
-            b*sin(d)*cos(c),
-            b*sin(d)*sin(c),
-            b*cos(d)
-        ) + ver;
+float kernal(vec3 p){
+    vec3 z = p;
+    float dr = 1.0;
+    float r = 0.0;
+
+    for(int i = 0; i < 6; i++){
+        r = dot(z,z);
+        if(r > 16.0) break;
+        float x = z.x, y = z.y, z0 = z.z;
+
+        float x2 = x*x, y2 = y*y, z2 = z0*z0;
+        float xy = x*y, xz = x*z0, yz = y*z0;
+
+        z = vec3(
+            x*(x2 - 3.0*y2 - 3.0*z2),
+            y*(3.0*x2 - y2 - 3.0*z2),
+            z0*(3.0*x2 + 3.0*y2 - z2)
+        ) + p;
     }
-    return 4.0 - dot(a,a);
+
+    // skibidi
+    return 2.5 - length(z);
 }
 `;
 
