@@ -1,7 +1,11 @@
 const playlist = [
     "music/acidjazzedevening.mod",
     "music/afterburner-razor1911.xm",
-    "music/paso-lost_scrotum.mod"
+    "music/paso-lost_scrotum.mod",
+    "music/pleasure-to-paso.mod",
+    "music/aryx.s3m",
+    "music/addiction.mod",
+    "music/rez19116.XM",
 ];
 let currentSong = 0;
 let chiptune = null;

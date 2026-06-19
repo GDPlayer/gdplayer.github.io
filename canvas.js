@@ -20,7 +20,7 @@ hello guys and welcome to my website site website!!!111
 
 Code ------------------------------------- GDPlayer1035
 Logo ------------------------------------- GDPlayer1035
-Music -------------------------- Tempest, paso, dubmood
+Music ---- Jogeir, Karsten Koch, Tempest, paso, dubmood
 
 -\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-
 `;
