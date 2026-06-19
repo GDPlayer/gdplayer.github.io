@@ -15,17 +15,16 @@ libopenmpt.locateFile = (path) => "./chiptune2/" + path;
 libopenmpt.onRuntimeInitialized = () => {
     const config = new ChiptuneJsConfig({
         repeatCount: 0,
-    })
+    });
     chiptune = new ChiptuneJsPlayer(config);
+    chiptune.onEnded(() => {
+        currentSong = (currentSong + 1) % playlist.length;
+        window.playTrack(playlist[currentSong]);
+    });
 }
 
 window.playTrack = (url) => {
     chiptune.load(url, (buffer) => {
         chiptune.play(buffer);
-        chiptune.onEnded(() => {
-            currentSong = (currentSong + 1) % playlist.length;
-            playTrack(playlist[currentSong]);
-        });
     });
 }
-
