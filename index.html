@@ -1,34 +1,29 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>bash</title>
-		<!-- powered by the magic of termynal -->
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="termynal.css">
-        <link href="https://fonts.googleapis.com/css?family=Fira+Mono">
-        <style>
-            body {
-                padding: 0; margin: 0;
-                background: #1a1e24;
-                width: 100%;
-                min-height: 100vh;
-                display: -webkit-box; display: -ms-flexbox; display: flex;
-                -webkit-box-align: center; -ms-flex-align: center; align-items: center;
-                -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center;
-                -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-            }
-        </style>
-    </head>
-    <body>
-        <div id="cmd" data-termynal>
-            <span data-ty="input">ls</span>
-	    <span data-ty>'my stupid website'</span>
-	    <span data-ty="input">cd "my stupid website"</span>
-	    <span data-ty="input">ls</span>
-	    <span data-ty>index.html</span>
-	    <span data-ty="input">cat index.html</span>
-	    <span data-ty>cat: index.html: No such file or directory</span>
-	    <span data-ty="input">exit</span>
-        <script src="termynal.js" data-termynal-container="#cmd"></script>
-    </body>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>gdplayer's website</title>
+    <script src="script.js"></script>
+    <script src="chiptune2/libopenmpt.js"></script>
+    <script src="chiptune2/chiptune2.js"></script>
+    <script defer src="canvas.js"></script>
+</head>
+
+<body>
+    <div class="warning" id="warning">THIS SITE PLAYS MUSIC!!!! click anywhere to play</div>
+    <canvas id="canvas">Your browser does not support the canvas element.</canvas>
+    <script defer>
+        const body = document.body;
+        const warning = document.getElementById("warning");
+        body.addEventListener("click", function ass() {
+            playTrack(playlist[currentSong]);
+            warning.remove();
+            body.removeEventListener("click", ass);
+        })
+    </script>
+</body>
+
 </html>
