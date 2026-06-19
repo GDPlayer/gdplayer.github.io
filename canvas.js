@@ -9,6 +9,8 @@ logo.src = "logo.png";
 let scrollerOffset = canvas.width;
 let bars = [];
 let numBars = 5;
+let lastTime = performance.now();
+let currentTime = 0;
 t = 0;
 
 centertext = `
@@ -48,6 +50,10 @@ function drawThreeStopGradientRect(ctx, x, y, w, h, c1, c2, c3, dir = 'tb') {
     ctx.fillRect(x, y, w, h);
 }
 
+function drawLogo() {
+    ctx.drawImage(logo, canvas.width / 2 - logo.width / 2, canvas.height / 2 - logo.height / 2 + Math.sin(t) * 16 - 100);
+}
+
 function drawText(text, x, y, lineHeight = 16) {
     ctx.font = `16px ${font}`; // Fixed order: size must come first
     ctx.fillStyle = "#fff";
@@ -69,7 +75,7 @@ function drawCredits() {
     });
 }
 
-function drawScroller() {
+function drawScroller(frameScale) {
     ctx.font = `16px ${font}`;
     ctx.fillStyle = "#fff";
 
@@ -87,15 +93,12 @@ function drawScroller() {
         }
         currentX += charWidth;
     }
-    scrollerOffset -= 2.5;
+    
+    // Move scroller independent of frame rate
+    scrollerOffset -= 2.5 * frameScale;
     if (currentX < 0) {
         scrollerOffset = canvas.width;
     }
-}
-
-
-function drawLogo() {
-    ctx.drawImage(logo, canvas.width / 2 - logo.width / 2, canvas.height / 2 - logo.height / 2 + Math.sin(t) * 16 - 100);
 }
 
 function drawBars() {
@@ -104,17 +107,26 @@ function drawBars() {
     }
 }
 
-function update() {
+function update(now) {
+    requestAnimationFrame(update);
+
+    const dt = (now - lastTime) / 1000;
+    lastTime = now;
+
+    if (dt > 0.1 || isNaN(dt)) return;
+
+    const frameScale = dt * 60;
+
     ctx.fillStyle = "#000549c2";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    // top and bottom gradients
     drawGradientRect(ctx, 0, 0, canvas.width, 32, "#95daebff", "#545dd600");
     drawGradientRect(ctx, 0, canvas.height - 32, canvas.width, 32, "#545dd600", "#95daebff");
+    
     drawBars();
     drawLogo();
     drawCredits();
-    drawScroller();
-    t = t + 0.05;
-    requestAnimationFrame(update);
+    drawScroller(frameScale);
+    
+    t += 0.05 * frameScale;
 }
 update();
