@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <title>Amiga Workbench</title>
+    <link rel="stylesheet" href="workbench.css">
+    <script src="workbench.js"></script>
+</head>
+
+<body>
+    <div class="workbench-screen">
+        <header class="workbench-screenbar">Amiga Workbench. Version 1.0. 696900 free memory
+            <div>
+                <button class="workbench-window-behind-button"></button><button
+                    class="workbench-window-front-button"></button>
+            </div>
+        </header>
+        <div class="workbench-icons-column">
+            <input class="workbench-checkbox" type="checkbox" id="gh" autocomplete="off">
+            <label for="gh" class="workbench-icon-drawer" onclick="window.open('https://github.com/GDPlayer')">my
+                git hub</label>
+            <input class="workbench-checkbox" type="checkbox" id="socials" autocomplete="off">
+            <label for="socials" class="workbench-icon-drawer">my Socials</label>
+            <input class="workbench-checkbox" type="checkbox" id="about" autocomplete="off" checked>
+            <label for="about" class="workbench-icon-drawer">about me</label>
+        </div>
+        <div class="workbench-window" id="aboutme" style="left: 10px;top: 30px;">
+            <div class="workbench-window-title-bar">
+                <button class="workbench-window-close-button"></button><span
+                    class="workbench-window-title-bar-text">about me</span>
+                <div class="workbench-window-title-bar-stripes"></div>
+                <div>
+                    <button class="workbench-window-behind-button"></button><button
+                        class="workbench-window-front-button"></button>
+                </div>
+            </div>
+            <div class="workbench-window-content" style="width: 400px; height: 200px;">
+                <pre style="white-space: pre;" class="workbench-window-content-text">
+Hello World!
+
+my name is gdplayer
+i program stuff and other stuff
+yeah
+you may know me as "tape guy"
+
+i mostly program in python or js
+
+i like old stuff
+like old computers
+
+i play geometry dash in my free time
+yeah thats pretty much it
+</pre>
+            </div>
+        </div>
+        <div class="workbench-window" id="socialswindow" style="left: 50px;top: 90px;">
+            <div class="workbench-window-title-bar">
+                <button class="workbench-window-close-button"></button><span class="workbench-window-title-bar-text">my
+                    socials...</span>
+                <div class="workbench-window-title-bar-stripes"></div>
+                <div>
+                    <button class="workbench-window-behind-button"></button><button
+                        class="workbench-window-front-button"></button>
+                </div>
+            </div>
+            <div class="workbench-window-content" style="width: 400px; height: 200px;">
+                <pre style="white-space: pre;" class="workbench-window-content-text">
+mi socials......
+
+discord: @io.open
+bluesky: @gdplayer1035.bsky.social
+matrix: @gdplayer1035:4d2.org
+mastodon (I DONT CHECK THIS OFTEN): 
+@tape_guy@mastodon.social
+github: https://github.com/GDPlayer
+</pre>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -10,6 +10,7 @@
     <script src="chiptune2/libopenmpt.js"></script>
     <script src="chiptune2/chiptune2.js"></script>
     <script defer src="canvas.js"></script>
+    <link rel="icon" type="image/png" href="/favicon.png">
 </head>
 
 <body>
@@ -23,6 +24,9 @@
             warning.remove();
             body.removeEventListener("click", ass);
         })
+        body.addEventListener("keydown", () => {
+            document.location.href = "index2.html";
+        });
     </script>
 </body>
 

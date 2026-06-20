@@ -21,8 +21,10 @@ hello guys and welcome to my website site website!!!111
 Code ------------------------------------- GDPlayer1035
 Logo ------------------------------------- GDPlayer1035
 Music ---- Jogeir, Karsten Koch, Tempest, paso, dubmood
-
+M
 -\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-.-\`-
+
+ PRESS ANY KEY TO ENTER
 `;
 
 scrollertext = "my pc has been lagging like crazy trying to make this website...... maybe because of my shitty IDE..... thanks micro$lop for creating the most bloated \"lightweight\" code editor -=-=- i literally do not know what else to put on this website so maybe ill just say hi to my friends instead -=-=- special greets to fluxdrive, mox, slinx92, wahplus, ponali, dd6, and others i could not be bothered to mention -=-=- WEBSITE UNDER CONSTRUCTION!!!!!!1111!!1!11!!11!!1 i may or may not update this website if at all";
@@ -93,7 +95,7 @@ function drawScroller(frameScale) {
         }
         currentX += charWidth;
     }
-    
+
     // Move scroller independent of frame rate
     scrollerOffset -= 2.5 * frameScale;
     if (currentX < 0) {
@@ -121,12 +123,12 @@ function update(now) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawGradientRect(ctx, 0, 0, canvas.width, 32, "#95daebff", "#545dd600");
     drawGradientRect(ctx, 0, canvas.height - 32, canvas.width, 32, "#545dd600", "#95daebff");
-    
+
     drawBars();
     drawLogo();
     drawCredits();
     drawScroller(frameScale);
-    
+
     t += 0.05 * frameScale;
 }
 update();

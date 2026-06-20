@@ -1,0 +1,208 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: url("assets/cur.cur"), default;
+}
+
+@font-face {
+    font-family: "TopazA1200";
+    src: url("Topaz_a1200_v1.0.ttf");
+}
+
+body {
+    background-color: rgb(0, 0, 0);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.workbench-screen {
+    overflow: hidden;
+    text-rendering: optimizeSpeed;
+    image-rendering: pixelated;
+    font-family: "TopazA1200";
+    font-size: 16px;
+    width: 640px;
+    height: 400px;
+    background-color: rgb(0, 85, 170);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    font-smooth: never;
+    -webkit-font-smoothing: none;
+    -moz-osx-font-smoothing: none;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    transform: scale(1);
+}
+
+.workbench-screenbar {
+    height: 20px;
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 85, 170);
+    padding: 0px 2px 0px 5px;
+    display: flex;
+    justify-content: space-between;
+    z-index: 2;
+}
+
+.workbench-window {
+    display: none;
+    border: 2px solid #fff;
+    border-top: none;
+    background-color: rgb(0, 85, 170);
+    position: absolute;
+    height: fit-content;
+    width: fit-content;
+    z-index: 1;
+}
+
+.workbench-window-title-bar {
+    height: 20px;
+    border-left: 2px solid #fff;
+    border-right: 2px solid #fff;
+    display: flex;
+    flex-direction: row;
+}
+
+.workbench-window-close-button {
+    width: 24px;
+    height: 20px;
+    background-color: rgb(0, 85, 170);
+    border: 0;
+    background-image: url("assets/close.png");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.workbench-window-title-bar-text {
+    height: 20px;
+    background-color: rgb(255, 255, 255);
+    color: rgb(0, 85, 170);
+    padding-left: 1px;
+}
+
+.workbench-window-behind-button {
+    width: 24px;
+    height: 20px;
+    background-color: rgb(0, 85, 170);
+    border: 0;
+    background-image: url("assets/back.png");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.workbench-window-front-button {
+    width: 26px;
+    height: 20px;
+    background-color: rgb(0, 85, 170);
+    border: 0;
+    background-image: url("assets/front.png");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.workbench-window-title-bar-stripes {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+    height: 20px;
+    /* absolutely atrocius */
+    background: linear-gradient(to bottom,
+            transparent 2px,
+            rgb(0, 85, 170) 2px, rgb(0, 85, 170) 4px,
+            transparent 4px, transparent 6px,
+            rgb(0, 85, 170) 6px, rgb(0, 85, 170) 8px,
+            transparent 8px, transparent 10px,
+            rgb(0, 85, 170) 10px, rgb(0, 85, 170) 12px,
+            transparent 12px, transparent 14px,
+            rgb(0, 85, 170) 14px, rgb(0, 85, 170) 16px,
+            transparent 16px);
+    background-color: rgb(255, 255, 255);
+}
+
+.workbench-window-content {
+    background-color: rgb(0, 85, 170);
+    color: white;
+    overflow-y: scroll;
+    overflow-x: hidden;
+
+    /* Firefox: Hides the native scrollbar completely */
+    scrollbar-width: none;
+
+    /* Chrome/Safari: Hides the native scrollbar completely */
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.workbench-icons-column {
+    margin-left: auto;
+}
+
+.workbench-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+}
+
+.workbench-icon-drawer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 58px;
+    height: 53px;
+    font-family: "TopazA1200";
+    font-size: 16px;
+    color: rgb(255, 255, 255);
+    background-color: rgb(0, 85, 170);
+    border: none;
+    padding: 5px;
+    margin: 5px;
+    overflow: visible;
+    white-space: nowrap;
+    background-image: url("assets/drawer.png");
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-position: top;
+    cursor: pointer;
+    /* Makes it feel like a clickable UI item */
+}
+
+.workbench-checkbox:checked+.workbench-icon-drawer {
+    background-image: url("assets/drawer_selected.png");
+}
+
+.workbench-icon-drawer:active {
+    background-image: url("assets/drawer_selected.png");
+}
+
+.workbench-window-content-text {
+    color: white;
+    font-family: "TopazA1200";
+}
+
+.workbench-window-content-text pre {
+    color: white;
+    font-family: "TopazA1200";
+    line-height: 18px;
+}
+
+.workbench-icons-column:has(#about:checked)~#aboutme {
+    display: block;
+}
+
+.workbench-icons-column:has(#socials:checked)~#socialswindow {
+    display: block;
+}
