@@ -15,6 +15,7 @@ libopenmpt.locateFile = (path) => "./chiptune2/" + path;
 libopenmpt.onRuntimeInitialized = () => {
     const config = new ChiptuneJsConfig({
         repeatCount: 0,
+        interpolationFilter: 1,
     });
     chiptune = new ChiptuneJsPlayer(config);
     chiptune.onEnded(() => {
