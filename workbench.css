@@ -188,8 +188,6 @@ body {
     background-size: 100%;
     background-repeat: no-repeat;
     background-position: top;
-    cursor: pointer;
-    /* Makes it feel like a clickable UI item */
 }
 
 .workbench-checkbox:checked+.workbench-icon-drawer {
