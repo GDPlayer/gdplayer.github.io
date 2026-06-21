@@ -84,6 +84,10 @@ body {
     background-position: center;
 }
 
+.workbench-window-close-button:active {
+    filter: invert(1);
+}
+
 .workbench-window-title-bar-text {
     height: 20px;
     background-color: rgb(255, 255, 255);
@@ -101,6 +105,10 @@ body {
     background-position: center;
 }
 
+.workbench-window-behind-button:active {
+    filter: invert(1);
+}
+
 .workbench-window-front-button {
     width: 26px;
     height: 20px;
@@ -109,6 +117,10 @@ body {
     background-image: url("assets/front.png");
     background-repeat: no-repeat;
     background-position: center;
+}
+
+.workbench-window-front-button:active {
+    filter: invert(1);
 }
 
 .workbench-window-title-bar-stripes {
@@ -201,6 +213,20 @@ body {
 
 .workbench-icons-column:has(#about:checked)~#aboutme {
     display: block;
+}
+
+.workbench-inactive {
+    position: relative;
+}
+
+.workbench-inactive::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><rect x="3" y="0" width="1" height="2" fill="white"/><rect x="1" y="2" width="1" height="2" fill="white"/></svg>');
+    background-size: 4px 4px;
+    image-rendering: pixelated;
 }
 
 .workbench-icons-column:has(#socials:checked)~#socialswindow {
