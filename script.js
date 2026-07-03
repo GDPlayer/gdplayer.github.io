@@ -1,4 +1,5 @@
 const playlist = [
+    "music/funkystars.xm",
     "music/REZ19111(1).xm",
     "music/acidjazzedevening.mod",
     "music/afterburner-razor1911.xm",
